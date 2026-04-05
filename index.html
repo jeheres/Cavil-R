@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildPro Services</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #ffffff; }
+    ::-webkit-scrollbar-thumb { background: #e5e5e5; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #d4d4d4; }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+    .delay-400 { animation-delay: 0.4s; }
+    .delay-500 { animation-delay: 0.5s; }
+
+    [contenteditable]:focus {
+      outline: 2px dashed #EA580C;
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+    [contenteditable]:hover:not(:focus) {
+      outline: 2px dashed #D6D3D1;
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    .media-slot {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .media-slot .overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s;
+      z-index: 10;
+    }
+    .media-slot:hover .overlay { opacity: 1; }
+
+    .toast {
+      position: fixed; bottom: 32px; right: 32px;
+      background: #171717; color: white;
+      padding: 12px 24px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      z-index: 9999;
+      transform: translateY(100px); opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    .video-modal {
+      position: fixed; inset: 0; z-index: 9998;
+      background: rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .video-modal.active { opacity: 1; pointer-events: all; }
+  </style>
+</head>
+<body class="bg-white text-stone-900">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Video Modal -->
+  <div id="videoModal" class="video-modal" onclick="closeVideoModal()">
+    <div class="bg-black rounded-2xl overflow-hidden w-full max-w-4xl mx-4 aspect-video relative" onclick="event.stopPropagation()">
+      <button onclick="closeVideoModal()" class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-colors">
+        <span class="iconify" data-icon="mdi:close" data-width="24"></span>
+      </button>
+      <iframe id="videoFrame" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <!-- Hidden File Inputs -->
+  <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+  <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+  <input type="file" id="heroInput" accept="image/*,video/*" class="hidden" onchange="handleHeroUpload(event)">
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 w-full z-50 h-16 border-b border-stone-100 bg-white/80 backdrop-blur-xl">
+    <div class="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="media-slot w-8 h-8 rounded-lg overflow-hidden bg-stone-200 flex-shrink-0" onclick="document.getElementById('logoInput').click()" title="Click to change logo">
+          <img id="logoImg" src="https://picsum.photos/seed/buildlogo/64/64.jpg" alt="Logo" class="w-full h-full object-cover">
+          <div class="overlay rounded-lg">
+            <span class="iconify text-white" data-icon="mdi:camera" data-width="18"></span>
+          </div>
+        </div>
+        <span contenteditable="true" class="font-semibold text-stone-900 text-lg leading-tight" id="siteName" spellcheck="false">BuildPro Services</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#services" class="text-sm text-stone-500 hover:text-orange-600 transition-colors">Services</a>
+        <a href="#gallery" class="text-sm text-stone-500 hover:text-orange-600 transition-colors">Gallery</a>
+        <a href="#videos" class="text-sm text-stone-500 hover:text-orange-600 transition-colors">Videos</a>
+        <a href="#about" class="text-sm text-stone-500 hover:text-orange-600 transition-colors">About</a>
+        <a href="#contact" class="text-sm font-medium text-white bg-stone-900 hover:bg-orange-600 px-4 py-2 rounded-lg transition-colors duration-300">Get Quote</a>
+      </div>
+      <button id="mobileMenuBtn" class="md:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-stone-100 transition-colors">
+        <span class="iconify" data-icon="mdi:menu" data-width="24"></span>
+      </button>
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="md:hidden hidden bg-white/95 backdrop-blur-xl border-b border-stone-100 px-6 py-4">
+      <div class="flex flex-col gap-3">
+        <a href="#services" class="text-sm text-stone-600 hover:text-orange-600 py-2">Services</a>
+        <a href="#gallery" class="text-sm text-stone-600 hover:text-orange-600 py-2">Gallery</a>
+        <a href="#videos" class="text-sm text-stone-600 hover:text-orange-600 py-2">Videos</a>
+        <a href="#about" class="text-sm text-stone-600 hover:text-orange-600 py-2">About</a>
+        <a href="#contact" class="text-sm font-medium text-white bg-stone-900 hover:bg-orange-600 px-4 py-2.5 rounded-lg text-center transition-colors">Get Quote</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pt-32 mb-32 px-6 relative">
+    <!-- Decorative -->
+    <div class="absolute top-20 right-0 w-64 h-64 rounded-full" style="background: rgba(255,237,213,0.5); filter: blur(64px);"></div>
+    <div class="max-w-5xl mx-auto relative">
+      <div class="max-w-3xl animate-in">
+        <div class="flex items-center gap-2 mb-6">
+          <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          <span class="text-xs font-medium text-stone-400 uppercase tracking-wider">Available for Projects</span>
+        </div>
+        <h1 class="text-4xl md:text-7xl font-medium tracking-tight leading-[1.1] mb-6">
+          <span contenteditable="true" class="block" spellcheck="false">Commercial &</span>
+          <span contenteditable="true" class="block" spellcheck="false">Residential</span>
+          <span class="text-stone-400 font-normal italic" contenteditable="true" spellcheck="false">Maintenance</span>
+        </h1>
+        <p class="text-lg md:text-xl text-stone-600 leading-relaxed mb-8 max-w-xl" contenteditable="true" spellcheck="false">
+          From cleaning and plumbing to full renovations and interior design — we handle every detail so you don't have to.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="#contact" class="inline-flex items-center gap-2 bg-stone-900 text-white text-sm font-medium px-6 py-3 rounded-lg hover:bg-orange-600 transition-colors duration-300">
+            Request a Quote
+            <span class="iconify" data-icon="mdi:arrow-right" data-width="16"></span>
+          </a>
+          <button onclick="document.getElementById('heroVideoInput')?.click()" class="inline-flex items-center gap-2 border border-stone-200 text-stone-600 text-sm font-medium px-6 py-3 rounded-lg hover:border-orange-600 hover:text-orange-600 transition-all duration-300">
+            <span class="iconify" data-icon="mdi:play-circle-outline" data-width="18"></span>
+            Add Hero Video
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero Image / Video -->
+      <div class="mt-12 media-slot rounded-2xl aspect-video bg-stone-200" onclick="document.getElementById('heroInput').click()" id="heroSlot">
+        <img id="heroImg" src="https://picsum.photos/seed/construction1/1200/675.jpg" alt="Hero" class="w-full h-full object-cover rounded-2xl">
+        <div class="overlay rounded-2xl flex-col gap-2">
+          <span class="iconify text-white" data-icon="mdi:image-edit" data-width="32"></span>
+          <span class="text-white text-sm font-medium">Click to replace image or video</span>
+        </div>
+      </div>
+      <input type="file" id="heroVideoInput" accept="image/*,video/*" class="hidden" onchange="handleHeroUpload(event)">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8 animate-in delay-200">
+        <div class="text-center p-4">
+          <div class="text-2xl md:text-3xl font-medium text-stone-900">500+</div>
+          <div class="text-xs text-stone-400 mt-1">Projects Completed</div>
+        </div>
+        <div class="text-center p-4">
+          <div class="text-2xl md:text-3xl font-medium text-stone-900">15+</div>
+          <div class="text-xs text-stone-400 mt-1">Years Experience</div>
+        </div>
+        <div class="text-center p-4">
+          <div class="text-2xl md:text-3xl font-medium text-stone-900">98%</div>
+          <div class="text-xs text-stone-400 mt-1">Client Satisfaction</div>
+        </div>
+        <div class="text-center p-4">
+          <div class="text-2xl md:text-3xl font-medium text-stone-900">24/7</div>
+          <div class="text-xs text-stone-400 mt-1">Emergency Support</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="mb-32 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="mb-12 animate-in">
+        <span class="text-xs font-semibold text-orange-600 uppercase tracking-wider">What We Do</span>
+        <h2 class="text-2xl md:text-3xl font-medium tracking-tight mt-2" contenteditable="true" spellcheck="false">Comprehensive Maintenance Services</h2>
+        <p class="text-stone-600 mt-3 max-w-lg" contenteditable="true" spellcheck="false">One team, every trade. We bring professional expertise to every corner of your property.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+        <!-- Cleaning -->
+        <div class="group cursor-pointer animate-in delay-100">
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-200 mb-5 media-slot" onclick="event.stopPropagation(); selectMediaSlot(this)">
+            <img src="https://picsum.photos/seed/cleaning01/800/600.jpg" alt="Cleaning" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="overlay rounded-2xl flex-col gap-2">
+              <span class="iconify text-white" data-icon="mdi:image-edit" data-width="28"></span>
+              <span class="text-white text-xs font-medium">Replace Image</span>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+              <span class="iconify" data-icon="mdi:broom" data-width="22"></span>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium group-hover:text-orange-600 transition-colors" contenteditable="true" spellcheck="false">Professional Cleaning</h3>
+              <p class="text-stone-600 text-sm leading-relaxed mt-1" contenteditable="true" spellcheck="false">Deep cleaning, post-construction cleanup, scheduled maintenance cleaning for offices, homes, and commercial spaces.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plumbing -->
+        <div class="group cursor-pointer animate-in delay-200">
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-200 mb-5 media-slot" onclick="event.stopPropagation(); selectMediaSlot(this)">
+            <img src="https://picsum.photos/seed/plumbing02/800/600.jpg" alt="Plumbing" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="overlay rounded-2xl flex-col gap-2">
+              <span class="iconify text-white" data-icon="mdi:image-edit" data-width="28"></span>
+              <span class="text-white text-xs font-medium">Replace Image</span>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+              <span class="iconify" data-icon="mdi:pipe-wrench" data-width="22"></span>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium group-hover:text-orange-600 transition-colors" contenteditable="true" spellcheck="false">Plumbing Solutions</h3>
+              <p class="text-stone-600 text-sm leading-relaxed mt-1" contenteditable="true" spellcheck="false">Leak repairs, pipe installation, drain cleaning, water heater services, and complete plumbing system overhauls.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Electrical -->
+        <div class="group cursor-pointer animate-in delay-300">
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-200 mb-5 media-slot" onclick="event.stopPropagation(); selectMediaSlot(this)">
+            <img src="https://picsum.photos/seed/electrical03/800/600.jpg" alt="Electrical" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="overlay rounded-2xl flex-col gap-2">
+              <span class="iconify text-white" data-icon="mdi:image-edit" data-width="28"></span>
+              <span class="text-white text-xs font-medium">Replace Image</span>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+              <span class="iconify" data-icon="mdi:flash" data-width="22"></span>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium group-hover:text-orange-600 transition-colors" contenteditable="true" spellcheck="false">Electrical Work</h3>
+              <p class="text-stone-600 text-sm leading-relaxed mt-1" contenteditable="true" spellcheck="false">Wiring, panel upgrades, lighting installation, generator hookups, and safety inspections for all property types.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Renovations -->
+        <div class="group cursor-pointer animate-in delay-400">
+          <div class="aspect-[4/3] rounded-2xl overflow-hidden bg-stone-200 mb-5 media-slot" onclick="event.stopPropagation(); selectMediaSlot(this)">
+            <img src="https://picsum.photos/seed/renovation04/800/600.jpg" alt="Renovations" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="overlay rounded-2xl flex-col gap-2">
+              <span class="iconify text-white" data-icon="mdi:image-edit" data-width="28"></span>
+              <span class="text-white text-xs font-medium">Replace Image</span>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+              <span class="iconify" data-icon="mdi:hammer-wrench" data-width="22"></span>
+            </div>
+            <div>
+              <h3 class="text-lg font-medium group-hover:text-orange-600 transition-colors" contenteditable="true" spellcheck="false">Renovations</h3>
+              <p class="text-stone-600 text-sm leading-relaxed mt-1" contenteditable="true" spellcheck="false">Kitchen and bathroom remodels, structural modifications, office fit-outs, and full property transformations.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interior Design - Featured Row -->
+      <div class="mt-12 group cursor-pointer rounded-3xl border border-stone-200 hover:border-orange-200 p-6 md:p-8 transition-colors duration-300 animate-in delay-500">
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+          <div class="w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden bg-stone-200 media-slot flex-shrink-0" onclick="event.stopPropagation(); selectMediaSlot(this)">
+            <img src="https://picsum.photos/seed/interior05/800/600.jpg" alt="Interior Design" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            <div class="overlay rounded-2xl flex-col gap-2">
+              <span class="iconify text-white" data-icon="mdi:image-edit" data-width="28"></span>
+              <span class="text-white text-xs font-medium">Replace Image</span>
+            </div>
+          </div>
+          <div class="w-full md:w-1/2">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                <span class="iconify" data-icon="mdi:palette-outline" data-width="22"></span>
+              </div>
+              <h3 class="text-lg font-medium group-hover:text-orange-600 transition-colors" contenteditable="true" spellcheck="false">Interior Design</h3>
+            </div>
+            <p class="text-stone-600 text-sm leading-relaxed mb-4" contenteditable="true" spellcheck="false">
+              Space planning, color consultation, furniture selection, custom cabinetry, and complete interior styling for residential and commercial interiors. We create environments that inspire.
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs bg-stone-100 text-stone-600 px-3 py-1 rounded-full" contenteditable="true" spellcheck="false">Space Planning</span>
+              <span class="text-xs bg-stone-100 text-stone-600 px-3 py-1 rounded-full" contenteditable="true" spellcheck="false">Color Consultation</span>
+              <span class="text-xs bg-stone-100 text-stone-600 px-3 py-1 rounded-full" contenteditable="true" spellcheck="false">Furniture Selection</span>
+              <span class="text-xs bg-stone-100 text-stone-600 px-3 py-1 rounded-full" contenteditable="true" spellcheck="false">Custom Cabinetry</span>
+              <span class="text-xs bg-stone-100 text-stone-600 px-3 py-1 rounded-full" contenteditable="true" spellcheck="false">3D Rendering</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Section -->
+  <section id="gallery" class="mb-32 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="flex items-end justify-between mb-12">
+        <div class="animate-in">
+          <span class="text-xs font-semibold text-orange-600 uppercase tracking-wider">Our Work</span>
+          <h2 class="text-2xl md:text-3xl font-medium tracking-tight mt-2" contenteditable="true" spellcheck="false">Project Gallery</h2>
+        </div>
+        <button onclick="addGalleryImage()" class="hidden md:inline-flex items-center gap-2 text-sm text-stone-500 hover:text-orange-600 border border-stone 
